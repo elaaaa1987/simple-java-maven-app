@@ -1,15 +1,29 @@
 pipeline {
-    agent {
-        docker {
-            image 'maven:3.6.3-jdk-8' 
-            args '-u root:sudo -v /root/.m2:/root/.m2' 
-        }
-    }
-    stages {
-        stage('Build') { 
+    agent none
+     stages {
+        stage("Fix the permission issue") {
+            
+            agent any
+            
             steps {
-                sh 'mvn -B -DskipTests clean package' 
+                sh "sudo chown root:jenkins /run/docker.sock"
             }
+       }
+       
+       stage('Pull Image') {
+        agent {
+           docker {
+            image 'maven:3.6.3-jdk-8' 
+            args '-u root:sudo -v /root/.m2:/root/.m2'
+           }
         }
-    }
+      }
+      stage('Build') {
+         steps {
+            sh 'mvn -B -DskipTests clean package'
+         }
+      }
+      
+     
+     }
 }
